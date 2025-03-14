@@ -190,8 +190,3 @@ For any questions or support, feel free to reach out:
 
 - Email: moinudinasad@gmail.com
 - GitHub: https://github.com/AsadMoinuddin152
-
-```
-
-You can copy this markdown code and paste it into a `README.md` file in your project directory. Feel free to customize any details as needed, such as the URLs or contact information!
-```
