@@ -1,11 +1,13 @@
-name: Auto-Merge & Reporting
+name: Auto-Merge Report
 
 on:
   pull_request:
     types: [closed]
+    branches:
+      - main # Change this if your default branch is different
 
 jobs:
-  merge-and-report:
+  generate-report:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
@@ -13,34 +15,28 @@ jobs:
       pull-requests: write
 
     steps:
-      # Checkout the repository
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Get changed files in the PR
-      - name: Get Changed Files
+      - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v44
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Create deployment report file
-      - name: Generate Deployment Report
+      - name: Generate report
         run: |
           mkdir -p reports
-          {
-            echo "**Version**: ${{ github.run_number }}"
-            echo "**Merged By**: ${{ github.actor }}"
-            echo "**Date**: ${{ github.event.pull_request.merged_at }}"
-            echo "**Changed Files:**"
-            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-              echo "- $file"
-            done
-          } > reports/deployment-${{ github.run_number }}.md
+          echo "### Deployment Report - #${{ github.run_number }}" > reports/deployment-${{ github.run_number }}.md
+          echo "**Merged by**: ${{ github.actor }}" >> reports/deployment-${{ github.run_number }}.md
+          echo "**Date**: $(date)" >> reports/deployment-${{ github.run_number }}.md
+          echo "**Changed Files:**" >> reports/deployment-${{ github.run_number }}.md
+          echo "${{ steps.changed-files.outputs.all_changed_files }}" >> reports/deployment-${{ github.run_number }}.md
 
-      # Commit the report to the repo
-      - name: Commit and Push Report
+      - name: Commit and push report
         run: |
-          git config --global user.name "GitHub Actions"
+          git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add reports/
-          git commit -m "Add deployment report ${{ github.run_number }}"
+          git commit -m "Add deployment report for run #${{ github.run_number }}"
           git push
