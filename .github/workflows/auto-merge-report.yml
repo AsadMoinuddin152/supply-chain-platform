@@ -5,9 +5,8 @@ on:
     types: [closed]
     branches:
       - main # Change this if your default branch is different
-
 jobs:
-  generate-report:
+  merge-and-report:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
@@ -15,28 +14,33 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Get changed files
+      - name: Get Changed Files
         id: changed-files
         uses: tj-actions/changed-files@v44
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate report
+      - name: Generate Unique Report Filename
+        run: echo "REPORT_FILE=reports/deployment-$(date +'%Y%m%d%H%M%S').md" >> $GITHUB_ENV
+
+      - name: Create Deployment Report
         run: |
           mkdir -p reports
-          echo "### Deployment Report - #${{ github.run_number }}" > reports/deployment-${{ github.run_number }}.md
-          echo "**Merged by**: ${{ github.actor }}" >> reports/deployment-${{ github.run_number }}.md
-          echo "**Date**: $(date)" >> reports/deployment-${{ github.run_number }}.md
-          echo "**Changed Files:**" >> reports/deployment-${{ github.run_number }}.md
-          echo "${{ steps.changed-files.outputs.all_changed_files }}" >> reports/deployment-${{ github.run_number }}.md
+          {
+            echo "**Version**: ${{ github.run_number }}"
+            echo "**Merged By**: ${{ github.actor }}"
+            echo "**Date**: ${{ github.event.pull_request.merged_at }}"
+            echo "**Changed Files:**"
+            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+              echo "- $file"
+            done
+          } > $REPORT_FILE
 
-      - name: Commit and push report
+      - name: Commit and Push Report
         run: |
-          git config --global user.name "github-actions"
+          git config --global user.name "actions-user"
           git config --global user.email "actions@github.com"
-          git add reports/
-          git commit -m "Add deployment report for run #${{ github.run_number }}"
+          git add $REPORT_FILE
+          git commit -m "Add deployment report for #${{ github.event.pull_request.number }}"
           git push
