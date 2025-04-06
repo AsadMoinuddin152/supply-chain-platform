@@ -7,6 +7,7 @@ const User = require("../models/User");
 require("dotenv").config();
 
 let token;
+let supplierId;
 const logFilePath = path.join(__dirname, "test_failures.log");
 
 // Utility function to log failed test cases
@@ -15,11 +16,12 @@ function logFailure(route, testCase, response) {
   ========================
   Route: ${route}
   Test Case: ${testCase}
-  Status Code: ${response.status}
-  Response Body: ${JSON.stringify(response.body, null, 2)}
+  Status Code: ${response?.status || "Unknown"}
+  Response Body: ${
+    response?.body ? JSON.stringify(response.body, null, 2) : "No response body"
+  }
   ========================
   `;
-
   fs.appendFileSync(logFilePath, logMessage);
 }
 
@@ -30,6 +32,11 @@ beforeAll(async () => {
     email: process.env.ADMIN_EMAIL,
     password: process.env.ADMIN_PASSWORD,
   });
+
+  if (!res.body.token) {
+    throw new Error("Failed to retrieve admin token. Check login credentials.");
+  }
+
   token = res.body.token;
 });
 
@@ -90,8 +97,6 @@ describe("User Routes", () => {
 });
 
 describe("Supplier Routes", () => {
-  let supplierId;
-
   it("should create a supplier (Admin/Manager)", async () => {
     const res = await request(app)
       .post("/api/suppliers")
@@ -159,7 +164,6 @@ describe("Inventory Routes", () => {
   let supplierId;
 
   beforeAll(async () => {
-    // Create a supplier to use for inventory tests
     const supplierRes = await request(app)
       .post("/api/suppliers")
       .set("Authorization", `Bearer ${token}`)
@@ -186,7 +190,7 @@ describe("Inventory Routes", () => {
         description: "Sample description",
         quantity: 100,
         price: 50,
-        supplier: supplierId, // Using dynamically fetched supplierId
+        supplier: supplierId,
       });
 
     try {
@@ -239,7 +243,6 @@ describe("Inventory Routes", () => {
   });
 
   afterAll(async () => {
-    // Cleanup: delete the supplier created for tests
     if (supplierId) {
       await request(app)
         .delete(`/api/suppliers/${supplierId}`)
@@ -250,37 +253,9 @@ describe("Inventory Routes", () => {
 
 describe("Order Routes", () => {
   let orderId;
-  let token;
   let inventoryId;
-  let supplierId;
 
   beforeAll(async () => {
-    // Log in to get the token before each test
-    const res = await request(app).post("/api/users/login").send({
-      email: process.env.ADMIN_EMAIL, // Use your admin email here
-      password: process.env.ADMIN_PASSWORD, // Use your admin password here
-    });
-
-    // Save the token for later use
-    token = res.body.token;
-
-    const supplierRes = await request(app)
-      .post("/api/suppliers")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        name: "Inventory Test Supplier",
-        contactPerson: "Jane Doe",
-        email: "inventorysupplier@example.com",
-        phone: "9876543210",
-        address: "123 Main Street, Springfield, IL, 62704",
-      });
-    if (supplierRes.statusCode !== 201) {
-      throw new Error("Failed to create supplier for inventory tests");
-    }
-
-    supplierId = supplierRes.body._id;
-
-    // Create a test inventory item and store its inventoryId
     const inventoryRes = await request(app)
       .post("/api/inventory")
       .set("Authorization", `Bearer ${token}`)
@@ -289,10 +264,13 @@ describe("Order Routes", () => {
         description: "Sample description",
         quantity: 100,
         price: 50,
-        supplier: supplierId, // Use the dynamically created supplierId
+        supplier: supplierId,
       });
 
-    inventoryId = inventoryRes.body._id; // Store the inventory ID for use in orders
+    if (inventoryRes.statusCode !== 201) {
+      throw new Error("Failed to create inventory for order tests");
+    }
+    inventoryId = inventoryRes.body._id;
   });
 
   it("should create an order (Admin/Manager)", async () => {
