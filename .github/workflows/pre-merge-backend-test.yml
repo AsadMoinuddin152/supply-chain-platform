@@ -1,0 +1,20 @@
+name: Pre-Merge Backend Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test-backend:
+    name: Run Backend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies & run tests
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run test
