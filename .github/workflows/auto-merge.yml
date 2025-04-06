@@ -2,7 +2,7 @@ name: Enable Auto-Merge
 
 on:
   pull_request:
-    types: [opened, synchronize, labeled]
+    types: [opened, synchronize, labeled, reopened]
 
 permissions:
   contents: write
@@ -10,9 +10,10 @@ permissions:
 
 jobs:
   enable-auto-merge:
-    if: github.event.pull_request.draft == false
+    if: |
+      github.event.pull_request.draft == false &&
+      contains(github.event.pull_request.labels.*.name, 'auto-merge')
     runs-on: ubuntu-latest
-
     steps:
       - name: Enable Auto-Merge
         uses: peter-evans/enable-pull-request-automerge@v3

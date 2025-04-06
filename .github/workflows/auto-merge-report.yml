@@ -5,7 +5,6 @@ on:
     types: [closed]
     branches:
       - main # Change this if your default branch is different
-
 jobs:
   generate-report:
     if: github.event.pull_request.merged == true
