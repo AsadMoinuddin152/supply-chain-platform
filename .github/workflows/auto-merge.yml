@@ -1,0 +1,19 @@
+name: Enable Auto-Merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+
+jobs:
+  enable-auto-merge:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Enable Auto-Merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          merge-method: squash
