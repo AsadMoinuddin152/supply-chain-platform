@@ -33,6 +33,11 @@ const connectDB = async () => {
         email: process.env.ADMIN_EMAIL,
         password: process.env.ADMIN_PASSWORD,
         role: "admin",
+        phone: "0000000000",
+        isActive: true,
+        loginCount: 0,
+        loginHistory: [],
+        createdBy: null,
       });
       console.log("Initial admin account created");
     } else {
