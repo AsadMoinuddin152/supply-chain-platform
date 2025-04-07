@@ -1,0 +1,53 @@
+.login-container {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+
+  background: linear-gradient(-45deg, #1890ff, #13c2c2, #73d13d, #ff85c0);
+  background-size: 400% 400%;
+  animation: gradientFlow 15s ease infinite;
+
+  /* Add responsive behavior */
+  flex-direction: column;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  background-color: #ffffffcc; /* Slight transparency for better background blend */
+  backdrop-filter: blur(10px); /* For a modern glassmorphism effect */
+  padding: 24px;
+  transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .login-container {
+    padding: 12px;
+  }
+}

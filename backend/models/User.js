@@ -11,6 +11,16 @@ const UserSchema = new mongoose.Schema(
       enum: ["admin", "manager", "employee"],
       default: "employee",
     },
+    department: { type: String },
+    phone: { type: String },
+    isActive: { type: Boolean, default: true },
+    lastLogin: { type: Date },
+    loginCount: { type: Number, default: 0 },
+    loginHistory: [{ type: Date }],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

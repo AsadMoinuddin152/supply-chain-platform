@@ -11,10 +11,13 @@ const generateToken = (user) => {
 // Register a new user (Admin only)
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, department, phone, createdBy } =
+      req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please fill all fields" });
+      return res
+        .status(400)
+        .json({ message: "Please fill all required fields" });
     }
 
     const userExists = await User.findOne({ email });
@@ -22,7 +25,16 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const user = await User.create({ name, email, password, role });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+      department,
+      phone,
+      createdBy,
+    });
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -42,7 +54,12 @@ exports.loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (user && (await user.comparePassword(password))) {
-      res.json({
+      user.lastLogin = new Date();
+      user.loginCount += 1;
+      user.loginHistory.push(new Date());
+      await user.save();
+
+      res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -53,14 +70,17 @@ exports.loginUser = async (req, res) => {
       res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message || error,
+    });
   }
 };
 
 // Get all users (Admin only)
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().populate("createdBy", "name email role");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -70,7 +90,10 @@ exports.getUsers = async (req, res) => {
 // Get user by ID
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate(
+      "createdBy",
+      "name email role"
+    );
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (error) {
@@ -84,9 +107,16 @@ exports.updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    if (req.body.password) user.password = req.body.password;
+    const { name, email, password, role, department, phone, isActive } =
+      req.body;
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.role = role || user.role;
+    user.department = department || user.department;
+    user.phone = phone || user.phone;
+    user.isActive = isActive !== undefined ? isActive : user.isActive;
+    if (password) user.password = password;
 
     await user.save();
     res.json({ message: "User updated", user });
