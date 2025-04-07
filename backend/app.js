@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
@@ -7,6 +8,9 @@ const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 app.use(express.json());
+
+// Enabling CORS
+app.use(cors());
 
 // Use Morgan for logging
 app.use(morgan("dev"));
