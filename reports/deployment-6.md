@@ -1,0 +1,5 @@
+### Deployment Report - #6
+**Merged by**: AsMoinuddin
+**Date**: Mon Apr  7 17:16:27 UTC 2025
+**Changed Files:**
+frontend/src/api/api.jsx frontend/src/components/AdminDashboard.jsx frontend/src/components/AppLayout.jsx frontend/src/components/EmployeeDashboard.jsx frontend/src/components/ManagerDashboard.jsx frontend/src/components/Navbar.jsx frontend/src/components/ProtectedRoute.jsx frontend/src/components/UserCreate.jsx frontend/src/components/UserView.jsx frontend/src/pages/LoginPage/Login.css frontend/src/pages/LoginPage/Login.jsx frontend/src/pages/UserManagement/UserAnalytics.jsx frontend/src/pages/UserManagement/UserList.jsx frontend/src/pages/UserProfile/UserProfile.jsx frontend/src/redux/authSlice.js frontend/src/redux/store.js backend/app.js backend/config/db.js backend/controllers/userController.js backend/models/User.js backend/package-lock.json backend/package.json frontend/index.html frontend/package-lock.json frontend/package.json frontend/src/App.css frontend/src/App.jsx frontend/src/index.css frontend/src/main.jsx
